@@ -11,8 +11,8 @@ from selenium.common.exceptions import TimeoutException
 # set up logging config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or "your_bot_token_here"
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID") or "your_chat_id_here"
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID") 
 
 # set up chrome options for headless mode/configure download behavior
 chrome_options = Options()
@@ -62,23 +62,6 @@ try:
     table = WebDriverWait(driver, 10).until(
         lambda d: d.find_element(By.XPATH, "//table")
     )
-
-    """
-    # Get all rows in the table body
-    rows = table.find_elements(By.XPATH, ".//tbody/tr")
-    for i, row in enumerate(rows, start=1):
-        print(f"Row {i}: {row.text}")
-        
-        # Find all rows in the table
-    all_rows = table.find_elements(By.XPATH, ".//tbody/tr")
-
-    # Get the second row (index 1 because it's zero-based)
-    if len(all_rows) >= 2:
-        header_cells = all_rows[1].find_elements(By.TAG_NAME, "th")
-        column_names = [cell.text.strip() for cell in header_cells]
-        print("Column names:", column_names)
-    else:
-        print("Table has fewer than 2 rows.")"""
     
     columns = ['Código', 'Nome da Filial', 'última conexão', 'Filial -> Central', 'Central -> Filial', 'Status']
     col_index_filial_central = columns.index("Filial -> Central")
@@ -115,16 +98,27 @@ try:
         hex_fc = rgba_to_hex(color_fc)
         hex_cf = rgba_to_hex(color_cf)
 
-        # Check if either is red (#FF3535)
-        if hex_fc == "#FF3535" or hex_cf == "#FF3535":
-            problems.append(row.text)
+        now_brazil = datetime.now().astimezone().strftime("%-I%p update")  # e.g., "12PM update"
+
+        branch_name = cells[1].text.strip()  # 'Nome da Filial' column
+        timestamp = cells[2].text.strip()    # 'última conexão' column
+
+        directions = []
+        if hex_fc == "#FF3535":
+            directions.append("Filial -> Central")
+        if hex_cf == "#FF3535":
+            directions.append("Central -> Filial")
+
+        if directions:
+            direction_text = " and ".join(directions) if len(directions) == 2 else directions[0]
+            problems.append(f"{now_brazil} - {branch_name} - {direction_text} has stopped at {timestamp}")
 
     # Send alert if any issues found
     if problems:
         alert_text = "🚨 Replication issues detected:\n" + "\n".join(problems)
         send_telegram_alert(alert_text)
     else:
-        send_telegram_alert("✅ No replication alerts found.")
+        send_telegram_alert("✅ No replication color alerts found.")
         logging.info("✅ No replication color alerts found.")
         
 finally:
