@@ -2,9 +2,7 @@ name: Replication Check
 
 on:
   schedule:
-    - cron: '0 10 * * *'   # 7:00 AM BRT (UTC+3)
-    - cron: '0 15 * * *'   # 12:00 PM BRT
-    - cron: '30 20 * * *'  # 5:30 PM BRT
+    - cron: '*/15 * * * *'   # every 15 minutes
   workflow_dispatch:       # Manual trigger
 
 jobs:
