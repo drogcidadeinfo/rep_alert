@@ -67,27 +67,25 @@ try:
     columns = ['Código', 'Nome da Filial', 'última conexão', 'Filial -> Central', 'Central -> Filial', 'Status']
     col_index_filial_central = columns.index("Filial -> Central")
     col_index_central_filial = columns.index("Central -> Filial")
-
+    
     # Get all data rows (starting after header)
     data_rows = table.find_elements(By.XPATH, ".//tbody/tr")
-
-    problems = []
-
+    
+    problem_branches = set()  # use a set to avoid duplicates
+    
     for row in data_rows:
         cells = row.find_elements(By.TAG_NAME, "td")
-        
         if not cells:
-            continue  # skip if row is empty
-
+            continue
+    
         # Get the two relevant cells
         cell_filial_central = cells[col_index_filial_central]
         cell_central_filial = cells[col_index_central_filial]
-
+    
         # Get the computed color style
         color_fc = cell_filial_central.value_of_css_property("color")
         color_cf = cell_central_filial.value_of_css_property("color")
-
-        # Convert to hex
+    
         def rgba_to_hex(rgba_string):
             import re
             match = re.search(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', rgba_string)
@@ -95,33 +93,27 @@ try:
                 r, g, b = map(int, match.groups())
                 return '#{:02X}{:02X}{:02X}'.format(r, g, b)
             return None
-
+    
         hex_fc = rgba_to_hex(color_fc)
         hex_cf = rgba_to_hex(color_cf)
-
-        now_brazil = datetime.now().astimezone().strftime("%-I%p update")  # e.g., "12PM update"
-
-        branch_name = cells[1].text.strip()  # 'Nome da Filial' column
-        timestamp = cells[2].text.strip()    # 'última conexão' column
-
-        directions = []
-        if hex_fc == "#FF3535":
-            directions.append("Filial -> Central")
-        if hex_cf == "#FF3535":
-            directions.append("Central -> Filial")
-
-        if directions:
-            direction_text = " and ".join(directions) if len(directions) == 2 else directions[0]
-            problems.append(f"{now_brazil} - {branch_name} - {direction_text} has stopped at {timestamp}")
-
-    # Send alert if any issues found
-    if problems:
-        alert_text = "🚨 Replication issues detected:\n" + "\n".join(problems)
-        send_telegram_alert(alert_text)
+    
+        if hex_fc == "#FF3535" or hex_cf == "#FF3535":
+            branch_name = cells[1].text.strip()  # 'Nome da Filial'
+            if branch_name:
+                problem_branches.add(branch_name)
+    
+    # Prepare alert message
+    if problem_branches:
+        from datetime import datetime, timedelta, timezone
+        from zoneinfo import ZoneInfo
+    
+        now_brazil = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%-I%p update")  # e.g., "12PM update"
+        branches_str = ", ".join(sorted(problem_branches))
+        alert_text = f"🚨 {now_brazil} - Há problemas na replicação na(s) filial(is) {branches_str}!"
+        print(alert_text)  # or send to Telegram
     else:
-        send_telegram_alert("✅ No replication color alerts found.")
-        logging.info("✅ No replication color alerts found.")
-        
+        logging.info("✅ Nenhum problema de replicação identificado.")
+  
 finally:
     time.sleep(2)
     driver.quit()
