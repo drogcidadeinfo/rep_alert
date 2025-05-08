@@ -1,0 +1,33 @@
+name: Replication Check
+
+on:
+  schedule:
+    - cron: '0 10 * * *'   # 7:00 AM BRT (UTC+3)
+    - cron: '0 15 * * *'   # 12:00 PM BRT
+    - cron: '30 20 * * *'  # 5:30 PM BRT
+  workflow_dispatch:       # Manual trigger
+
+jobs:
+  run-replication-check:
+    runs-on: ubuntu-latest
+
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.10
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium requests
+
+      - name: 📄 Run replication check script
+        run: python scrap.py  # Replace with your filename
