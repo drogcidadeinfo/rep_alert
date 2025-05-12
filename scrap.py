@@ -110,6 +110,7 @@ try:
         now_brazil = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%-I%p update")  # e.g., "12PM update"
         branches_str = ", ".join(sorted(problem_branches))
         alert_text = f"🚨 {now_brazil} - Há problemas na replicação na(s) filial(is) {branches_str}!"
+        send_telegram_alert(alert_text)
         print(alert_text)  # or send to Telegram
     else:
         logging.info("✅ Nenhum problema de replicação identificado.")
