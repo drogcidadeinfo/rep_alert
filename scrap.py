@@ -13,7 +13,7 @@ from selenium.common.exceptions import TimeoutException
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_ACTUAL_CHAT_ID") 
+TELEGRAM_ACTUAL_CHAT_ID = os.getenv("TELEGRAM_ACTUAL_CHAT_ID") 
 
 # set up chrome options for headless mode/configure download behavior
 chrome_options = Options()
@@ -33,7 +33,7 @@ driver = webdriver.Chrome(options=chrome_options)
 def send_telegram_alert(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
+        "chat_id": TELEGRAM_ACTUAL_CHAT_ID,
         "text": message,
         "parse_mode": "HTML",  # Optional, allows formatting
         "disable_web_page_preview": True
