@@ -13,7 +13,7 @@ from selenium.common.exceptions import TimeoutException
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_ACTUAL_CHAT_ID = os.getenv("TELEGRAM_ACTUAL_CHAT_ID") 
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID") 
 
 # set up chrome options for headless mode/configure download behavior
 chrome_options = Options()
@@ -27,13 +27,31 @@ prefs = {
 }
 chrome_options.add_experimental_option("prefs", prefs)
 
-# initialize webdriver
-driver = webdriver.Chrome(options=chrome_options)
-
 def send_telegram_alert(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
-        "chat_id": TELEGRAM_ACTUAL_CHAT_ID,
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        logging.info("📨 Telegram alert sent.")
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"❌ Telegram API error {response.status_code}: {response.text}")
+    except Exception as e:
+        logging.error(f"❌ Unexpected error sending Telegram message: {e}")
+
+# initialize webdriver
+driver = webdriver.Chrome(options=chrome_options)
+"""
+def send_telegram_alert(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
         "parse_mode": "HTML",  # Optional, allows formatting
         "disable_web_page_preview": True
@@ -44,7 +62,7 @@ def send_telegram_alert(message):
         response.raise_for_status()
         logging.info("📨 Telegram alert sent.")
     except Exception as e:
-        logging.error(f"❌ Failed to send Telegram message: {e}")
+        logging.error(f"❌ Failed to send Telegram message: {e}")"""
 
 # start download process 
 try:
