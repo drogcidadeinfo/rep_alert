@@ -13,7 +13,7 @@ from selenium.common.exceptions import TimeoutException
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID") 
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_ACTUAL_CHAT_ID") 
 
 # set up chrome options for headless mode/configure download behavior
 chrome_options = Options()
@@ -113,6 +113,7 @@ try:
         send_telegram_alert(alert_text)
         print(alert_text)  # or send to Telegram
     else:
+        send_telegram_alert("✅ Nenhum problema de replicação identificado.")
         logging.info("✅ Nenhum problema de replicação identificado.")
   
 finally:
