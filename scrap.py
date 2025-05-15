@@ -131,7 +131,6 @@ try:
         send_telegram_alert(alert_text)
         print(alert_text)  # or send to Telegram
     else:
-        send_telegram_alert("✅ Nenhum problema de replicação identificado.")
         logging.info("✅ Nenhum problema de replicação identificado.")
   
 finally:
