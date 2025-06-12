@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install selenium requests
-
+          pip install tzdata
+          
       - name: 📄 Run replication check script
         run: python scrap.py  # Replace with your filename
